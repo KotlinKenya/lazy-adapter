@@ -39,8 +39,8 @@ class LazyPagingAdapter<T : LazyCompare, V : ViewBinding> :
     private val selectedItems = mutableListOf<Long>()
 
     inner class LazyViewHolder(
-        val context: Context,
-        val binding: V?
+        context: Context,
+        private val binding: V?
     ) : RecyclerView.ViewHolder(binding?.root ?: View(context)) {
 
         init {
@@ -155,19 +155,19 @@ class LazyPagingAdapter<T : LazyCompare, V : ViewBinding> :
     }
 
     fun onSwipedRight(
+        recyclerView: RecyclerView,
         @DrawableRes icon: Int? = null,
         @ColorRes iconColor: Int? = null,
         @ColorRes color: Int? = null,
         remove: Boolean = false,
-        view: RecyclerView,
         swiped: (item: T) -> Unit
-    ) {
+    ) = apply {
         val fields = LazySwipeFields(
             drawable = icon,
             iconColor = iconColor,
             background = color
         )
-        val swiper = object : SwipeRight(context = view.context, lazyField = fields) {
+        val swiper = object : SwipeRight(context = recyclerView.context, lazyField = fields) {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.absoluteAdapterPosition
                 getItem(position)?.let {
@@ -180,23 +180,23 @@ class LazyPagingAdapter<T : LazyCompare, V : ViewBinding> :
             }
 
         }
-        ItemTouchHelper(swiper).attachToRecyclerView(view)
+        ItemTouchHelper(swiper).attachToRecyclerView(recyclerView)
     }
 
     fun onSwipedLeft(
+        recyclerView: RecyclerView,
         @DrawableRes icon: Int? = null,
         @ColorRes iconColor: Int? = null,
         @ColorRes color: Int? = null,
         remove: Boolean = true,
-        view: RecyclerView,
         swiped: (item: T) -> Unit
-    ) {
+    ) = apply {
         val fields = LazySwipeFields(
             drawable = icon,
             iconColor = iconColor,
             background = color
         )
-        val swiper = object : SwipeLeft(context = view.context, lazyField = fields) {
+        val swiper = object : SwipeLeft(context = recyclerView.context, lazyField = fields) {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.absoluteAdapterPosition
                 getItem(position)?.let {
@@ -209,7 +209,7 @@ class LazyPagingAdapter<T : LazyCompare, V : ViewBinding> :
             }
 
         }
-        ItemTouchHelper(swiper).attachToRecyclerView(view)
+        ItemTouchHelper(swiper).attachToRecyclerView(recyclerView)
     }
 
     /**
@@ -245,6 +245,12 @@ class LazyPagingAdapter<T : LazyCompare, V : ViewBinding> :
     fun add(item: T) {
         val list: MutableList<T> = getMutableList()
         list.add(item)
+        updateList(list)
+    }
+
+    fun add(items: List<T>) {
+        val list: MutableList<T> = getMutableList()
+        list.addAll(items)
         updateList(list)
     }
 

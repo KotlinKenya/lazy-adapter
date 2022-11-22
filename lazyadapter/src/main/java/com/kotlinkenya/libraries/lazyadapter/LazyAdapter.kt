@@ -1,21 +1,17 @@
 package com.kotlinkenya.libraries.lazyadapter
 
 import android.content.Context
-import android.graphics.Canvas
-import android.graphics.Paint
-import android.graphics.PorterDuff
-import android.graphics.PorterDuffXfermode
-import android.graphics.drawable.ColorDrawable
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
 import com.kotlinkenya.lazyadapter.common.*
+import kotlinx.coroutines.NonDisposableHandle.parent
 
 /**
  * LazyAdapter
@@ -36,17 +32,21 @@ class LazyAdapter<T : LazyCompare, V : ViewBinding> :
      */
     private var mBind: (V.(item: T) -> Unit)? = null
     private var mBindPosition: (V.(item: T, position: Int) -> Unit)? = null
+    private var mBindSelected: (V.(item: T, selected: Boolean) -> Unit)? = null
 
     /**
-     * DEFAULT CLICKS
+     * CLICKS
      */
     private var mClicked: ((item: T) -> Unit)? = null
     private var mLongClicked: ((item: T) -> Boolean)? = null
 
     /**
-     * MAIN VIEWGROUP
+     * SELECTIONS
      */
-    private lateinit var parent: ViewGroup
+    private var onItemSelected: ((item: T?) -> Unit)? = null
+    private var onItemsSelected: ((items: List<T?>) -> Unit)? = null
+
+    private val selectedItems = mutableListOf<Long>()
 
     inner class LazyViewHolder(context: Context, private val binding: V?) :
         RecyclerView.ViewHolder(binding?.root ?: View(context)) {
@@ -54,31 +54,78 @@ class LazyAdapter<T : LazyCompare, V : ViewBinding> :
         init {
             binding?.root?.setOnClickListener {
                 mClicked?.invoke(getItem(absoluteAdapterPosition) as T)
+                // CHECK SELECTIONS AND TOGGLE
+                if (onItemSelected != null || onItemsSelected != null)
+                    when (selectedItems.contains(absoluteAdapterPosition.toLong())) {
+                        true -> removeSelection(absoluteAdapterPosition)
+                        false -> addSelection(absoluteAdapterPosition)
+                    }
+
+                // ON SINGLE ITEM SELECTED
+                onItemSelected?.let { mSelect ->
+                    val item = selectedItems.map { position -> getItem(position.toInt()) }
+                        .firstOrNull()
+                    mSelect.invoke(item)
+                }
+
+                // ON MULTIPLE ITEM SELECTED
+                onItemsSelected?.let { mSelects ->
+                    val list = selectedItems.map { position -> getItem(position.toInt()) }
+                    mSelects.invoke(list)
+                }
             }
         }
 
-        fun bindHolder(item: T) {
-            mBind?.let { block -> binding?.block(item) }
-            mBindPosition?.let { block -> binding?.block(item, absoluteAdapterPosition) }
+        fun bindHolder(item: T, selected: Boolean? = null) {
+            when (selected) {
+                null -> {
+                    mBind?.let { block -> binding?.block(item) }
+                    mBindPosition?.let { block -> binding?.block(item, absoluteAdapterPosition) }
+                }
+                else -> {
+                    mBindSelected?.let { block -> binding?.block(item, selected) }
+                }
+            }
+
         }
+
 
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LazyViewHolder {
-        this.parent = parent
         val binding = mCreate?.invoke(parent)
         return LazyViewHolder(parent.context, binding)
     }
 
     override fun onBindViewHolder(holder: LazyViewHolder, position: Int) {
-        val item = getItem(position) as T
-        holder.bindHolder(item)
+        val item = getItem(position)
+        item?.let {
+            if (onItemSelected != null || onItemsSelected != null)
+                holder.bindHolder(it, selectedItems.contains(position.toLong()))
+            else
+                holder.bindHolder(it)
+        }
     }
 
     /**
      * ADAPTER FUNCTIONS
      */
     private fun currentMutableList() = currentList.toMutableList()
+
+    private fun addSelection(position: Int) {
+        if (selectedItems.contains(position.toLong())) return
+        val previousPosition = selectedItems.firstOrNull()
+        if (onItemSelected != null) selectedItems.clear()
+        selectedItems.add(position.toLong())
+        previousPosition?.toInt()?.let { notifyItemChanged(it) }
+        notifyItemChanged(position)
+    }
+
+    private fun removeSelection(position: Int) {
+        if (!selectedItems.contains(position.toLong())) return
+        selectedItems.remove(position.toLong())
+        notifyItemChanged(position)
+    }
 
     private fun updateList(list: List<T>) {
         submitList(list)
@@ -141,6 +188,11 @@ class LazyAdapter<T : LazyCompare, V : ViewBinding> :
         mBindPosition = block
     }
 
+    @JvmName("onBindWithSelection")
+    fun onBind(bind: V.(item: T, selected: Boolean) -> Unit) = apply {
+        mBindSelected = bind
+    }
+
     /**
      * CLICKING
      */
@@ -152,7 +204,16 @@ class LazyAdapter<T : LazyCompare, V : ViewBinding> :
         mLongClicked = block
     }
 
+    fun onItemSelected(block: ((item: T?) -> Unit)? = null) = apply {
+        onItemSelected = block
+    }
+
+    fun onItemsSelected(block: ((items: List<T?>) -> Unit)? = null) = apply {
+        onItemsSelected = block
+    }
+
     fun onSwipedRight(
+        recyclerView: RecyclerView,
         @DrawableRes icon: Int? = null,
         @ColorRes iconColor: Int? = null,
         @ColorRes color: Int? = null,
@@ -164,23 +225,26 @@ class LazyAdapter<T : LazyCompare, V : ViewBinding> :
             iconColor = iconColor,
             background = color
         )
-        val swiper = object : SwipeRight(context = parent.context, lazyField = fields) {
+        val swiper = object : SwipeRight(context = recyclerView.context, lazyField = fields) {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.absoluteAdapterPosition
-                getItem(position)?.let {
+                getItem(position)?.let { item ->
                     when (remove) {
                         true -> remove(position)
                         false -> notifyItemChanged(position)
                     }
-                    swiped.invoke(it)
+                    swiped.invoke(item)
                 }
             }
 
         }
-        ItemTouchHelper(swiper).attachToRecyclerView(parent as RecyclerView)
+
+        ItemTouchHelper(swiper).attachToRecyclerView(recyclerView)
+
     }
 
     fun onSwipedLeft(
+        recyclerView: RecyclerView,
         @DrawableRes icon: Int? = null,
         @ColorRes iconColor: Int? = null,
         @ColorRes color: Int? = null,
@@ -192,20 +256,20 @@ class LazyAdapter<T : LazyCompare, V : ViewBinding> :
             iconColor = iconColor,
             background = color
         )
-        val swiper = object : SwipeLeft(context = parent.context, lazyField = fields) {
+        val swiper = object : SwipeLeft(context = recyclerView.context, lazyField = fields) {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.absoluteAdapterPosition
-                getItem(position)?.let {
+                getItem(position)?.let { item ->
                     when (remove) {
                         true -> remove(position)
                         false -> notifyItemChanged(position)
                     }
-                    swiped.invoke(it)
+                    swiped.invoke(item)
                 }
             }
-
         }
-        ItemTouchHelper(swiper).attachToRecyclerView(parent as RecyclerView)
-    }
 
+        ItemTouchHelper(swiper).attachToRecyclerView(recyclerView)
+
+    }
 }
