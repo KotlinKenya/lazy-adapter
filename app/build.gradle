@@ -32,6 +32,7 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+    namespace 'com.kotlinkenya.lazyadapter'
 }
 
 dependencies {
@@ -39,14 +40,14 @@ dependencies {
     implementation(project(":lazyadapter"))
     implementation(project(":lazypagingadapter"))
 
-    implementation 'androidx.core:core:1.9.0'
-    implementation 'androidx.activity:activity-ktx:1.6.1'
-    implementation 'com.google.android.material:material:1.7.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation('androidx.paging:paging-runtime-ktx:3.1.1')
+    implementation AndroidX.core
+    implementation AndroidX.activity.ktx
+    implementation Google.android.material
+    implementation AndroidX.constraintLayout
+    implementation(AndroidX.paging.runtimeKtx)
 
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.4'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0'
+    testImplementation Testing.junit4
+    androidTestImplementation AndroidX.test.ext.junit
+    androidTestImplementation AndroidX.test.espresso.core
 
 }

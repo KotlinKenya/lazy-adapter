@@ -31,14 +31,15 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+    namespace 'com.kotlinkenya.libraries.lazyadapter'
 }
 
 dependencies {
 
     api(project(":common"))
 
-    implementation 'com.google.android.material:material:1.7.0'
-    implementation 'androidx.recyclerview:recyclerview:1.2.1'
+    implementation Google.android.material
+    implementation AndroidX.recyclerView
 
 }
 
