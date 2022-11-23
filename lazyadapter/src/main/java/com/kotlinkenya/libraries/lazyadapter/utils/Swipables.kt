@@ -1,4 +1,4 @@
-package com.kotlinkenya.lazyadapter.common
+package com.kotlinkenya.libraries.lazyadapter.utils
 
 import android.content.Context
 import android.graphics.Canvas
@@ -9,6 +9,7 @@ import android.graphics.drawable.ColorDrawable
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import com.kotlinkenya.libraries.lazyadapter.R
 
 /**
  * @project LazyAdapter

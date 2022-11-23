@@ -38,7 +38,6 @@ android {
 dependencies {
 
     implementation(project(":lazyadapter"))
-    implementation(project(":lazypagingadapter"))
 
     implementation AndroidX.core
     implementation AndroidX.activity.ktx

@@ -1,4 +1,4 @@
-package com.kotlinkenya.lazyadapter.common
+package com.kotlinkenya.libraries.lazyadapter.utils
 
 import androidx.recyclerview.widget.DiffUtil
 
@@ -13,7 +13,7 @@ abstract class LazyCompare {
     open fun areContentsSame(newItem: Any?): Boolean = this == newItem
 }
 
-fun <T: LazyCompare> lazyComparator() = object : DiffUtil.ItemCallback<T>() {
+fun <T: LazyCompare> getDefaultLazyComparator() = object : DiffUtil.ItemCallback<T>() {
     override fun areItemsTheSame(oldItem: T, newItem: T): Boolean =
         oldItem.areItemsSame(newItem)
 

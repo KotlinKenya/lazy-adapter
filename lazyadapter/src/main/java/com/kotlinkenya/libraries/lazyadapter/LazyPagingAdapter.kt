@@ -1,4 +1,4 @@
-package com.kotlinkenya.libraries.lazypagingadapter
+package com.kotlinkenya.libraries.lazyadapter
 
 import android.content.Context
 import android.view.View
@@ -10,7 +10,7 @@ import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
-import com.kotlinkenya.lazyadapter.common.*
+import com.kotlinkenya.libraries.lazyadapter.utils.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -22,7 +22,7 @@ import kotlinx.coroutines.launch
  * Created 7/21/22 at 2:06 PM
  */
 class LazyPagingAdapter<T : LazyCompare, V : ViewBinding> :
-    PagingDataAdapter<T, LazyPagingAdapter<T, V>.LazyViewHolder>(lazyComparator()) {
+    PagingDataAdapter<T, LazyPagingAdapter<T, V>.LazyViewHolder>(getDefaultLazyComparator()) {
 
     private var mCreate: ((parent: ViewGroup) -> V)? = null
 

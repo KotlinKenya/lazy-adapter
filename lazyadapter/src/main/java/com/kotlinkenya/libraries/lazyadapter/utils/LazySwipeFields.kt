@@ -1,4 +1,4 @@
-package com.kotlinkenya.lazyadapter.common
+package com.kotlinkenya.libraries.lazyadapter.utils
 
 import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes

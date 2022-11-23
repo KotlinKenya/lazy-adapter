@@ -1,7 +1,6 @@
 package com.kotlinkenya.libraries.lazyadapter
 
 import android.content.Context
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.ColorRes
@@ -10,8 +9,7 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
-import com.kotlinkenya.lazyadapter.common.*
-import kotlinx.coroutines.NonDisposableHandle.parent
+import com.kotlinkenya.libraries.lazyadapter.utils.*
 
 /**
  * LazyAdapter
@@ -20,7 +18,7 @@ import kotlinx.coroutines.NonDisposableHandle.parent
  * Created 7/21/22 at 10:08 AM
  */
 class LazyAdapter<T : LazyCompare, V : ViewBinding> :
-    ListAdapter<T, LazyAdapter<T, V>.LazyViewHolder>(lazyComparator()) {
+    ListAdapter<T, LazyAdapter<T, V>.LazyViewHolder>(getDefaultLazyComparator()) {
 
     /**
      * CREATING

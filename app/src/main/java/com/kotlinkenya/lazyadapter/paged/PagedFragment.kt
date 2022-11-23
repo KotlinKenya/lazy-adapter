@@ -7,10 +7,10 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.kotlinkenya.lazyadapter.R
-import com.kotlinkenya.lazyadapter.common.LazyCompare
 import com.kotlinkenya.lazyadapter.databinding.FragmentGenericBinding
 import com.kotlinkenya.lazyadapter.databinding.ItemGenericBinding
-import com.kotlinkenya.libraries.lazypagingadapter.LazyPagingAdapter
+import com.kotlinkenya.libraries.lazyadapter.LazyPagingAdapter
+import com.kotlinkenya.libraries.lazyadapter.utils.LazyCompare
 import java.text.DecimalFormat
 
 /**

@@ -36,10 +36,11 @@ android {
 
 dependencies {
 
-    api(project(":common"))
-
     implementation Google.android.material
+
     implementation AndroidX.recyclerView
+    implementation AndroidX.paging.runtimeKtx
+
 
 }
 
