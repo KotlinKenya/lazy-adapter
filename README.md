@@ -92,11 +92,52 @@ In your app module find `build.gradle` and add :
 ## Usage
 
 - let your data class extend the `LazyCompare()`
+  ```kotlin
+    data class Item (val name: String) : LazyCompare()
+  ```
 - create an xml file for your object
+  ```xml
+  <!-- in this example our layout is item_layout.xml  -->
+  
+  <?xml version="1.0" encoding="utf-8"?>
+  <androidx.constraintlayout.widget.ConstraintLayout ...>
+
+    <androidx.cardview.widget.CardView ...>
+
+        <TextView
+            android:id="@+id/tv_text"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="16dp"
+            android:text="TextView" />
+  
+    </androidx.cardview.widget.CardView>
+  
+  </androidx.constraintlayout.widget.ConstraintLayout>
+  ```
 - create an adapter from the `LazyAdapter` class
+  ```kotlin
+     val adapter = LazyAdapter<Item, LayoutItemBinding>()
+  ```
 - initialize the view
+  ```kotlin
+  adapter.onCreate { parent: ViewGroup -> 
+    val inflater = LayoutInflater.from(parent.context)
+    LayoutItemBinding.inflate(inflater, parent, false) 
+  }
+  ```
 - bind the views
-- set the adapter to the recyclerview
+  ```kotlin
+  adapter.onBind {item : Item ->
+    // you can access all views in here
+    tvText.text = item.name
+  }
+  ```
+- set the adapter to the recyclerview and submitList
+  ```kotlin
+    recyclerview.adapter = adapter
+    adapter.submitList(listOf<Item>()) // populate your list
+  ```
 
 ## Contributing
 
